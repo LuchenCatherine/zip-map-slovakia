@@ -1,3 +1,12 @@
+/**
+ * Visualization of Slovakian zip codes. 
+ * 
+ * Data downloaded from Wikipedia (https://sk.wikipedia.org/wiki/Zoznam_slovensk%C3%BDch_obc%C3%AD_a_vojensk%C3%BDch_obvodov)
+ * Visualization uses Mercator projection; zoom adapted from bl.ocks.org/mbostock/eec4a6cda2f573574a11
+ *
+ * @author lucyia (ping@lucyia.com)
+ */
+
 (function (window, document, undefined) {
 
 	function data2Vis(file){
@@ -37,27 +46,36 @@
 				var minLon = d3.min(cities, function(d){return d.lon});
 				var maxLon = d3.max(cities, function(d){return d.lon});				
 
-				var projection = d3.geo.mercator()
-					.scale(6000)
-					.translate([width/2,height/2])
-					.center([medianLon, medianLat]);
+				var scaleInitial = 6000;
+
+				var projection = d3.geo.mercator();
+
+				var zoom = d3.behavior.zoom()
+					.translate([width/2, height/2])
+					.scale(scaleInitial)
+					.scaleExtent([scaleInitial, 15*scaleInitial])
+					.on('zoom', zoomed);
 
 				// draw svg panel with margins
 				var svg = d3.select('body')
 					.append('svg')
 						.attr('width', width)
 						.attr('height', height)
-						.style('border', '1px solid black');
+						.style('border', '1px solid black')
+					.append('g');
 
-				// tooltip
-				var tooltip = svg.append('text')
-					.attr('x', width-150)
-					.attr('y', height-100)
-					.attr('fill', 'black')
-					.text('Name of a city');
+				var g = svg.append('g');
 
-				// draw cities as circles
-				svg.selectAll('circle')
+				svg.append('rect')
+					.attr('class', 'overlay')
+					.attr('width', width)
+					.attr('height', height);					
+
+				svg
+					.call(zoom)
+					.call(zoom.event);
+
+				g.selectAll('circle')
 					.data(cities)
 					.enter()
 					.append('circle')
@@ -70,8 +88,24 @@
 						.attr('r', 1)
 						.attr('fill', 'black')
 						.on('mouseover', function(d){
-							tooltip.text(d.name);
+							
 						});
+
+				function zoomed(){
+					projection
+						.translate(zoom.translate())
+						.scale(zoom.scale())
+						.center([medianLon, medianLat]);
+
+					g.selectAll('circle')
+						.attr('cx', function (d) {
+							return projection([d.lon, d.lat])[0];
+						})
+						.attr('cy', function(d){
+							return projection([d.lon, d.lat])[1];
+						})
+				}
+
 			}
 
 		});

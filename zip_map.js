@@ -17,7 +17,7 @@
 			visualize(parseData(data));
 
 			function parseData(data){
-				var cities = data.map(function (cityInfo) {
+				var citiesArray = data.map(function (cityInfo) {
 					var zip = cityInfo.zip.replace(/ /g, '');
 					var population = parseInt(cityInfo.population.replace(/ /g, ''));
 					// gps coordinates
@@ -28,25 +28,29 @@
 					return new City(cityInfo.name, zip, population, lat, lon);
 				});
 
-				return cities;
+				return citiesArray;
 			}
 
-			function visualize(cities) {
-				// attributes
+			function visualize(data) {
+				// variables
 				var width = 800;
 				var height = 500;
 
-				// boundaries of data
-				var medianLat = d3.median(cities, function(d){return d.lat;});
-				var medianLon = d3.median(cities, function(d){return d.lon;});
-
-				var minLat = d3.min(cities, function(d){return d.lat});
-				var maxLat = d3.max(cities, function(d){return d.lat});
-				
-				var minLon = d3.min(cities, function(d){return d.lon});
-				var maxLon = d3.max(cities, function(d){return d.lon});				
-
 				var scaleInitial = 6000;
+
+				var basicColor = "#bbb";
+				var hoverColor = "#aaa";
+
+				var medianLat = d3.median(data, function(d){ return d.lat; });
+				var medianLon = d3.median(data, function(d){ return d.lon; });
+
+				var populationCheck = document.getElementById("populationCheck").checked;
+				var colorCheck = document.getElementById("colorCheck").checked;				
+
+				// scales and functions
+				var radius = d3.scale.sqrt()
+					.domain(d3.extent(data, function(d){ return d.population; }))
+					.range([2, 20]);
 
 				var projection = d3.geo.mercator();
 
@@ -56,40 +60,64 @@
 					.scaleExtent([scaleInitial, 15*scaleInitial])
 					.on('zoom', zoomed);
 
-				// draw svg panel with margins
-				var svg = d3.select('body')
+				// draw elements
+				var svg = d3.select('#vis')
 					.append('svg')
 						.attr('width', width)
 						.attr('height', height)
 						.style('border', '1px solid black')
 					.append('g');
 
-				var g = svg.append('g');
-
 				svg.append('rect')
 					.attr('class', 'overlay')
 					.attr('width', width)
-					.attr('height', height);					
+					.attr('height', height);
 
-				svg
-					.call(zoom)
+				var circleGroup = svg.append('g');
+
+				svg.call(zoom)
 					.call(zoom.event);
 
-				g.selectAll('circle')
-					.data(cities)
-					.enter()
-					.append('circle')
-						.attr('cx', function (d) {
-							return projection([d.lon, d.lat])[0];
-						})
-						.attr('cy', function(d){
-							return projection([d.lon, d.lat])[1];
-						})
-						.attr('r', 1)
-						.attr('fill', 'black')
-						.on('mouseover', function(d){
-							
-						});
+				update(data);
+
+				function update(data){
+					var cities = circleGroup.selectAll('circle')
+						.data(data);
+					
+					cities.enter()
+						.append('circle')
+							.attr('class', 'city')
+							.attr('cx', function(d){ return projection([d.lon, d.lat])[0]; })
+							.attr('cy', function(d){ return projection([d.lon, d.lat])[1]; })
+							.on('mouseover', mouseover)
+							.on('mouseout', moseout)
+							.text(function(d){ return d.name; })
+						.transition()
+							.duration(700)
+							.attr('r', function(d){ return populationCheck ? radius(d.population) : 5; })
+							.attr('fill', function(d){ return colorCheck ? color(d.zip) : basicColor; });
+
+					cities.exit()
+						.transition()
+						.duration(700)
+						.attr('r', 0)
+						.remove();
+				}
+
+				function color(zip) {
+					return '#bbb';
+				}
+
+				function mouseover(){
+					d3.select(this)
+						.attr('stroke', hoverColor)
+						.attr('stroke-width', 10);
+				}
+
+				function moseout(){
+					d3.select(this)
+						.attr('stroke', 'none');
+				}
 
 				function zoomed(){
 					projection
@@ -97,17 +125,12 @@
 						.scale(zoom.scale())
 						.center([medianLon, medianLat]);
 
-					g.selectAll('circle')
-						.attr('cx', function (d) {
-							return projection([d.lon, d.lat])[0];
-						})
-						.attr('cy', function(d){
-							return projection([d.lon, d.lat])[1];
-						})
+					circleGroup.selectAll('circle')
+						.attr('cx', function(d){ return projection([d.lon, d.lat])[0]; })
+						.attr('cy', function(d){ return projection([d.lon, d.lat])[1]; })
+						.attr('r', function(d){ return radius(d.population*0.001*zoom.scale()); });
 				}
-
 			}
-
 		});
 
 		function City(name, zip, population, lat, lon){

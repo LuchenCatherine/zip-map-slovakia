@@ -19,7 +19,7 @@
 			function parseData(data){
 				var citiesArray = data.map(function (cityInfo) {
 					var zip = cityInfo.zip.replace(/ /g, '');
-					var population = parseInt(cityInfo.population.replace(/ /g, ''));
+					var population = parseInt(cityInfo.population.replace(/ | /g, ''));
 					// gps coordinates
 					var coordinates = /(.+)°N (.+)°E/g.exec(cityInfo.gps);
 					var lat = parseFloat(coordinates[1].replace(/ /g, ''));
@@ -127,8 +127,7 @@
 
 					circleGroup.selectAll('circle')
 						.attr('cx', function(d){ return projection([d.lon, d.lat])[0]; })
-						.attr('cy', function(d){ return projection([d.lon, d.lat])[1]; })
-						.attr('r', function(d){ return radius(d.population*0.001*zoom.scale()); });
+						.attr('cy', function(d){ return projection([d.lon, d.lat])[1]; });
 				}
 			}
 		});

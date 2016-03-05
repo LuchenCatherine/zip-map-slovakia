@@ -7,9 +7,12 @@
  * @author lucyia (ping@lucyia.com)
  */
 
+'use strict';
+
 (function (window, document, undefined) {
 
-	function data2Vis(file){
+	function data2Vis(file){		
+
 		d3.tsv(file, function (error, data) {
 
 			if (error) throw error;
@@ -23,7 +26,7 @@
 					// gps coordinates
 					var coordinates = /(.+)°N (.+)°E/g.exec(cityInfo.gps);
 					var lat = parseFloat(coordinates[1].replace(/ /g, ''));
-					var lon = parseFloat(coordinates[2].replace(/ /g, ''));
+					var lon = parseFloat(coordinates[2].replace(/ /g, ''));					
 
 					return new City(cityInfo.name, zip, population, lat, lon);
 				});
@@ -38,19 +41,21 @@
 
 				var scaleInitial = 6000;
 
-				var basicColor = "#bbb";
-				var hoverColor = "#aaa";
+				var hoverColor = '#aaaaaa';
+				var matchColor = '#000000';
+				var nonMatchColor = '#dadada';
 
 				var medianLat = d3.median(data, function(d){ return d.lat; });
 				var medianLon = d3.median(data, function(d){ return d.lon; });
-
-				var populationCheck = document.getElementById("populationCheck").checked;
-				var colorCheck = document.getElementById("colorCheck").checked;				
 
 				// scales and functions
 				var radius = d3.scale.sqrt()
 					.domain(d3.extent(data, function(d){ return d.population; }))
 					.range([2, 20]);
+
+				var cityColor = d3.scale.ordinal()
+					.domain(d3.range(10))
+					.range(['#2ca02c', '#bcbd22', '#ff7f0e', '#d62728', '#8c564b', '#7f7f7f', '#17becf', '#1f77b4', '#9467bd', '#e377c2']);
 
 				var projection = d3.geo.mercator();
 
@@ -78,9 +83,37 @@
 				svg.call(zoom)
 					.call(zoom.event);
 
-				update(data);
+				// draw cities
+				update();
 
-				function update(data){
+				// add listeners to input fields
+				d3.select('#populationCheck').on('change', function(){
+					update();
+				});
+
+				d3.select('#colorCheck').on('change', function(){
+					update();
+				});
+
+				d3.select('#zipInput').on('input', function(){
+					if (isNaN(document.getElementById('zipInput').value)) {
+						// show warning
+					} else {
+						// valid input
+						update();
+					}
+				});
+
+				// color legend
+				d3.selectAll('.color-box')
+					.style('background-color', function(d, i){ return cityColor(i); });
+
+				// data don't change, only their attributes
+				function update(){
+					var populationCheck = document.getElementById('populationCheck').checked;
+					var colorCheck = document.getElementById('colorCheck').checked;
+					var input = document.getElementById('zipInput').value;
+
 					var cities = circleGroup.selectAll('circle')
 						.data(data);
 					
@@ -91,11 +124,12 @@
 							.attr('cy', function(d){ return projection([d.lon, d.lat])[1]; })
 							.on('mouseover', mouseover)
 							.on('mouseout', moseout)
-							.text(function(d){ return d.name; })
-						.transition()
-							.duration(700)
-							.attr('r', function(d){ return populationCheck ? radius(d.population) : 5; })
-							.attr('fill', function(d){ return colorCheck ? color(d.zip) : basicColor; });
+							.text(function(d){ return d.name; });
+
+					cities.transition()
+							.duration(800)
+							.attr('r', function(d){	return populationCheck ? radius(d.population) : 3; })
+							.attr('fill', function(d){ return color(input, d.zip, colorCheck); });
 
 					cities.exit()
 						.transition()
@@ -104,8 +138,21 @@
 						.remove();
 				}
 
-				function color(zip) {
-					return '#bbb';
+				function color(input, zip, show) {
+					if (zip.startsWith(input)) {
+						return show ? nextNumberColor() : matchColor;
+					} else {
+						return nonMatchColor;
+					}
+
+					function nextNumberColor(){
+						if (input.length<5) {
+							return cityColor(zip.charAt(input.length));
+						} else {
+							// no next number, the whole input is the same as zip
+							return matchColor;
+						}
+					}
 				}
 
 				function mouseover(){
@@ -141,6 +188,6 @@
 		}
 	}
 
-	data2Vis("/data/slovakia_cities.tsv");
+	data2Vis('/data/slovakia_cities.tsv');
 
 })(this, document);

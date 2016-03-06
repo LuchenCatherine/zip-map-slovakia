@@ -32,7 +32,7 @@
 		.row>span{
 			font-size: 14px;
 		}
-		.color-box-wrapper{			
+		.color-box-wrapper{
 			margin: 4px 0 0 4px;
 		}
 		.color-box{
@@ -44,7 +44,7 @@
 			color: white;
 			text-align: center;
 			padding: 1px;
-			font-size: 11px;			
+			font-size: 11px;
 		}
 		.overlay {
 			fill: none;
@@ -54,18 +54,30 @@
 			cursor: -moz-grab;
 			cursor: -webkit-grab;
 		}
-
 		.overlay:active { 
 			cursor: grabbing;
 			cursor: -moz-grabbing;
 			cursor: -webkit-grabbing;
 		}
+		.tooltip {
+			position: absolute;
+			padding: 5px 10px;
+			font: 11px sans-serif;
+			font-weight: bold;			
+			text-align: center;
+			color: white;
+			background-color: black;
+		}
+		.tooltip>p{
+			margin-top: 5px;
+			margin-bottom: 5px; 
+		}
 	</style>
 </head>
 <body>
 	<div class="vis-box">
-		<div id="vis"></div>
-		<div class="options">	
+		<div class="vis"></div>
+		<div class="options">
 			<div class="row">
 				<input id="zipInput" name="zipcode" type="text" value="" pattern="\d{5}" maxlength="5"></input>
 			</div>

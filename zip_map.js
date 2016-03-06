@@ -21,8 +21,8 @@
 
 			function parseData(data){
 				var citiesArray = data.map(function (cityInfo) {
-					var zip = cityInfo.zip.replace(/ /g, '');
-					var population = parseInt(cityInfo.population.replace(/ | /g, ''));
+					var zip = cityInfo.zip.replace(/\s/g, '');
+					var population = parseInt(cityInfo.population.replace(/\s/g, ''));
 					// gps coordinates
 					var coordinates = /(.+)°N (.+)°E/g.exec(cityInfo.gps);
 					var lat = parseFloat(coordinates[1].replace(/ /g, ''));
@@ -65,8 +65,14 @@
 					.scaleExtent([scaleInitial, 15*scaleInitial])
 					.on('zoom', zoomed);
 
+				// add basic tooltip
+				d3.select(".vis")
+					.append('div')
+						.attr('class', 'tooltip')
+						.style('opacity', 0);
+
 				// draw elements
-				var svg = d3.select('#vis')
+				var svg = d3.select('.vis')
 					.append('svg')
 						.attr('width', width)
 						.attr('height', height)
@@ -157,15 +163,40 @@
 					}
 				}
 
-				function mouseover(){
+				function mouseover(d){
 					d3.select(this)
 						.attr('stroke', hoverColor)
-						.attr('stroke-width', 10);
+						.attr('stroke-width', 5);
+
+					d3.select('.tooltip')
+						.transition()
+						.style('opacity', 1);
+
+					d3.select('.tooltip')
+						.html(function(){
+							var tooltip = '<p>' + d.zip + ' - ' + d.name + '</p>';
+							if (document.getElementById('populationCheck').checked) {
+								// create user friendly format for population numbers
+								var number = d.population.toString().split('').reverse().join('');
+								number = number.replace(/(\d{3})/g, "$1 ");
+								number = number.split('').reverse().join('');
+
+								tooltip += '<p>' + number + ' citizens </p>';
+							}
+
+							return tooltip;
+						})
+						.style('left', (d3.event.pageX) + "px")
+						.style('top', (d3.event.pageY) + "px");						
 				}
 
 				function moseout(){
 					d3.select(this)
 						.attr('stroke', 'none');
+
+					d3.select('.tooltip')
+						.transition()
+						.style('opacity', 0);
 				}
 
 				function zoomed(){

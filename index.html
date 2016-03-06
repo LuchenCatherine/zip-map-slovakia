@@ -7,8 +7,44 @@
 	<script src="//d3js.org/d3.v3.min.js" type="text/javascript"></script>
 	<script type="text/javascript" src="/zip_map.js"></script>
 	<style type="text/css">
+		.vis-box{
+			position: relative;
+			width: 800px;
+			height: 500px;
+		}
 		.options{
+			position: absolute;
+			bottom: 0;
+			right: 0;
 			font-family: sans-serif;
+			margin: 10px;
+		}
+		#zipInput{
+			font-size: 30px;
+			font-family: monospace;
+			letter-spacing: 7px;
+			width: 117px;
+			padding: 10px 15px;;
+		}
+		.row{
+			margin: 10px 0;
+		}
+		.row>span{
+			font-size: 14px;
+		}
+		.color-box-wrapper{			
+			margin: 4px 0 0 4px;
+		}
+		.color-box{
+			height: 12px;
+			width: 11px;
+			float: left;
+			margin-right: 1px;
+			background-color: #dadada;
+			color: white;
+			text-align: center;
+			padding: 1px;
+			font-size: 11px;			
 		}
 		.overlay {
 			fill: none;
@@ -24,44 +60,32 @@
 			cursor: -moz-grabbing;
 			cursor: -webkit-grabbing;
 		}
-		.color-box-wrapper{
-			height: 20px;
-		}
-		.color-box{
-			height: 15px;
-			width: 15px;
-			float: left;
-			margin-right: 5px;
-			background-color: blue;
-			color: white;
-			text-align: center;
-			padding: 2px;
-			font-size: smaller;
-		}
 	</style>
 </head>
 <body>
-	<div id="vis"></div>
-	<div class="options">	
-		<div class="row">
-			<input id="zipInput" name="zipcode" type="text" value="" pattern="\d{5}" maxlength="5"></input>
-		</div>
-		<div class="row">
-			<input id="populationCheck" type="checkbox" name="population" checked="false" /> Population
-		</div>
-		<div class="row">
-			<input id="colorCheck" type="checkbox" name="color" /> Next number coloured		
-			<div class="color-box-wrapper">
-				<div class="color-box">0</div>
-				<div class="color-box">1</div>
-				<div class="color-box">2</div>
-				<div class="color-box">3</div>
-				<div class="color-box">4</div>
-				<div class="color-box">5</div>
-				<div class="color-box">6</div>
-				<div class="color-box">7</div>
-				<div class="color-box">8</div>
-				<div class="color-box">9</div>
+	<div class="vis-box">
+		<div id="vis"></div>
+		<div class="options">	
+			<div class="row">
+				<input id="zipInput" name="zipcode" type="text" value="" pattern="\d{5}" maxlength="5"></input>
+			</div>
+			<div class="row">
+				<input id="populationCheck" type="checkbox" name="population" checked="false" /> <span>Show population</span>
+			</div>
+			<div class="row">
+				<input id="colorCheck" type="checkbox" name="color" /> <span>Color next number</span>
+				<div class="color-box-wrapper">
+					<div class="color-box">0</div>
+					<div class="color-box">1</div>
+					<div class="color-box">2</div>
+					<div class="color-box">3</div>
+					<div class="color-box">4</div>
+					<div class="color-box">5</div>
+					<div class="color-box">6</div>
+					<div class="color-box">7</div>
+					<div class="color-box">8</div>
+					<div class="color-box">9</div>
+				</div>
 			</div>
 		</div>
 	</div>

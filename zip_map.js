@@ -93,6 +93,12 @@
 
 				d3.select('#colorCheck').on('change', function(){
 					update();
+
+					// color legend only when checked
+					d3.selectAll('.color-box')
+						.style('background-color', function(d, i){ 
+							return document.getElementById('colorCheck').checked ? cityColor(i) : nonMatchColor; 
+						});
 				});
 
 				d3.select('#zipInput').on('input', function(){
@@ -103,10 +109,6 @@
 						update();
 					}
 				});
-
-				// color legend
-				d3.selectAll('.color-box')
-					.style('background-color', function(d, i){ return cityColor(i); });
 
 				// data don't change, only their attributes
 				function update(){

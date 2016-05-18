@@ -19,3 +19,6 @@ The visualization is updated according to three inputs:
  * Number input - ZIP code made out of five digits (starting by 0, 9 or 8)
  * Population - choice for scaling a circle representing a city according to its population
  * Color of the next number - choice for matching the next number of a ZIP code to a color to see if there is any particular logic of ZIP code numbers 
+
+## Available online at
+Portfolio page: <a href="http://lucyia.com/portfolio/code/zip_map.html">Visualization of ZIP codes</a>

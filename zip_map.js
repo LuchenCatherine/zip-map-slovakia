@@ -11,7 +11,14 @@
 
 (function ( window, document, undefined ) {
 
-	function data2Vis( file ){		
+	data2Vis('/data/slovakia_cities.tsv');
+
+	/**
+	 * Function firstly parses the given file and then visualizes it.
+	 *
+	 * @param {string} file tab separated file 
+	 */
+	function data2Vis( file ) {
 
 		d3.tsv( file, function ( error, data ) {
 
@@ -19,21 +26,46 @@
 
 			visualize( parseData( data ) );
 
-			function parseData( data ){
-				var citiesArray = data.map( function (cityInfo) {
+			/**
+			 * Parses all elements of given data and creates an array of city objects from it.
+			 *
+			 * @param {array} data array of objects representing each line from file
+			 * @return {array} cities array of objects representing each city
+			 */
+			function parseData( data ) {
+
+				return data.map( createCity );
+
+				/**
+				 * Creates an object representing a city with given properties.
+				 *
+				 * @param {object} cityInfo object with parameters of a city
+				 * @return {object} city object representing a city
+				 */
+				function createCity( cityInfo ) {
+					
 					var zip = cityInfo.zip.replace(/\s/g, '');
 					var population = parseInt( cityInfo.population.replace(/\s/g, '') );
-					// gps coordinates
 					var coordinates = /(.+)°N (.+)°E/g.exec( cityInfo.gps );
 					var lat = parseFloat( coordinates[1].replace(/ /g, '') );
-					var lon = parseFloat( coordinates[2].replace(/ /g, '') );					
+					var lon = parseFloat( coordinates[2].replace(/ /g, '') );
 
-					return city( cityInfo.name, zip, population, lat, lon );
-				});
-
-				return citiesArray;
+					return {
+						name: cityInfo.name,
+						zip: zip,
+						population: population,
+						lat: lat,
+						lon: lon
+					};
+				}
 			}
 
+			/**
+			 * Creates a map visualization from given data.
+			 * Each city is rendered as a circle either coloured or gray and has mouse listeners for tooltip.
+			 *
+			 * @param {array} data array of objects representing cities
+			 */
 			function visualize( data ) {
 				// variables
 				var width = 800;
@@ -45,12 +77,12 @@
 				var matchColor = '#000000';
 				var nonMatchColor = '#dadada';
 
-				var medianLat = d3.median( data, function(d){ return d.lat; } );
-				var medianLon = d3.median( data, function(d){ return d.lon; } );
+				var medianLat = d3.median( data, function(d) { return d.lat; } );
+				var medianLon = d3.median( data, function(d) { return d.lon; } );
 
 				// scales and functions
 				var radius = d3.scale.sqrt()
-					.domain( d3.extent( data, function(d){ return d.population; } ) )
+					.domain( d3.extent( data, function(d) { return d.population; } ) )
 					.range( [2, 20] );
 
 				var cityColor = d3.scale.ordinal()
@@ -93,21 +125,21 @@
 				update();
 
 				// add listeners to input fields
-				d3.select('#populationCheck').on('change', function(){
+				d3.select('#populationCheck').on('change', function() {
 					update();
 				});
 
-				d3.select('#colorCheck').on('change', function(){
+				d3.select('#colorCheck').on('change', function() {
 					update();
 
 					// color legend only when checked
 					d3.selectAll('.color-box')
-						.style('background-color', function(d, i){ 
+						.style('background-color', function(d, i) { 
 							return document.getElementById('colorCheck').checked ? cityColor( i ) : nonMatchColor;
 						});
 				});
 
-				d3.select('#zipInput').on('input', function(){
+				d3.select('#zipInput').on('input', function() {
 					if ( isNaN( document.getElementById('zipInput').value ) ) {
 						// show warning
 					} else {
@@ -116,8 +148,11 @@
 					}
 				});
 
-				// data don't change, only their attributes
-				function update(){
+				/**
+				 * Update function for the whole visualization creating cities as circles with given attributes.
+				 * (Data don't change, only their attributes)
+				 */
+				function update() {
 					var populationCheck = document.getElementById('populationCheck').checked;
 					var colorCheck = document.getElementById('colorCheck').checked;
 					var input = document.getElementById('zipInput').value;
@@ -128,16 +163,16 @@
 					cities.enter()
 						.append('circle')
 							.attr('class', 'city')
-							.attr('cx', function(d){ return projection( [d.lon, d.lat] )[0]; })
-							.attr('cy', function(d){ return projection( [d.lon, d.lat] )[1]; })
+							.attr('cx', function(d) { return projection( [d.lon, d.lat] )[0]; })
+							.attr('cy', function(d) { return projection( [d.lon, d.lat] )[1]; })
 							.on('mouseover', mouseover)
 							.on('mouseout', moseout)
-							.text( function(d){ return d.name; } );
+							.text( function(d) { return d.name; } );
 
 					cities.transition()
 							.duration( 800 )
-							.attr('r', function(d){	return populationCheck ? radius( d.population ) : 3; })
-							.attr('fill', function(d){ return color( input, d.zip, colorCheck ); });
+							.attr('r', function(d) { return populationCheck ? radius( d.population ) : 3; })
+							.attr('fill', function(d) { return color( input, d.zip, colorCheck ); });
 
 					cities.exit()
 						.transition()
@@ -146,14 +181,28 @@
 						.remove();
 				}
 
-				function color(input, zip, show) {
-					if (zip.startsWith(input)) {
+				/**
+				 * Determines what colour should the city circle have and returns it.
+				 *
+				 * @param {string} input numbers from input form
+				 * @param {string} zip full five letter zip code
+				 * @param {boolean} show indicator whether the city should be rendered with colour
+				 * @return {string} color
+				 */
+				function color( input, zip, show ) {
+
+					if ( zip.startsWith( input ) ) {
 						return show ? nextNumberColor() : matchColor;
 					} else {
 						return nonMatchColor;
 					}
 
-					function nextNumberColor(){
+					/**
+					 * Determines what's the colour of the next number in zip code and returns it.
+					 *
+					 * @return {string} color
+					 */
+					function nextNumberColor() {
 						if ( input.length < 5 ) {
 							return cityColor( zip.charAt( input.length ) );
 						} else {
@@ -163,7 +212,13 @@
 					}
 				}
 
-				function mouseover(d){
+				/**
+				 * Creates a tooltip over the circle representing a city
+				 * and creates a stroke around the circle to highlight it.
+				 *
+				 * @param {object} city 
+				 */
+				function mouseover( city ){
 					var circle = d3.select( this )
 						.attr('stroke', hoverColor)
 						.attr('stroke-width', 5);
@@ -179,12 +234,17 @@
 						.style('left', absMouseCoord[0] + "px")
 						.style('top', absMouseCoord[1] + "px");
 
-					function showTooltip(){
-						var tooltip = '<p>' + d.zip + ' - ' + d.name + '</p>';
+					/**
+					 * Shows formatted tooltip with information about the city.
+					 * 
+					 * @return {string} 
+					 */
+					function showTooltip() {
+						var tooltip = '<p>' + city.zip + ' - ' + city.name + '</p>';
 						
 						if ( document.getElementById('populationCheck').checked ) {
 							// create user friendly format for population numbers
-							var number = d.population.toString().split('').reverse().join('');
+							var number = city.population.toString().split('').reverse().join('');
 							number = number.replace(/(\d{3})/g, "$1 ");
 							number = number.split('').reverse().join('');
 
@@ -192,10 +252,13 @@
 						}
 
 						return tooltip;
-					}				
+					}
 				}
 
-				function moseout(){
+				/**
+				 * Hides the tooltip and resets the stroke of a circle.
+				 */
+				function moseout() {
 					d3.select( this )
 						.attr('stroke', 'none');
 
@@ -204,32 +267,22 @@
 						.style('opacity', 0);
 				}
 
-				function zoomed(){
+				/**
+				 * Updates the projection acoording to updated zoom scale
+				 * and renderes only those cities in the extent of the zoom scale.
+				 */
+				function zoomed() {
 					projection
 						.translate( zoom.translate() )
 						.scale( zoom.scale() )
 						.center( [medianLon, medianLat] );
 
 					circleGroup.selectAll('circle')
-						.attr('cx', function(d){ return projection( [d.lon, d.lat] )[0]; })
-						.attr('cy', function(d){ return projection( [d.lon, d.lat] )[1]; });
+						.attr('cx', function(d) { return projection( [d.lon, d.lat] )[0]; })
+						.attr('cy', function(d) { return projection( [d.lon, d.lat] )[1]; });
 				}
 			}
 		});
-
-		function city( name, zip, population, lat, lon ){
-			var city = {
-				name: name,
-				zip: zip,
-				population: population,
-				lat: lat,
-				lon: lon
-			};
-
-			return city;
-		}
-	}
-
-	data2Vis('/data/slovakia_cities.tsv');
+	}	
 
 })( this, document );

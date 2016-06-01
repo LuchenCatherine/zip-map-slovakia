@@ -68,7 +68,7 @@
 				// add basic tooltip
 				d3.select(".vis")
 					.append('div')
-						.attr('class', 'tooltip')
+						.attr('class', 'city-tooltip')
 						.style('opacity', 0);
 
 				// draw elements
@@ -164,15 +164,17 @@
 				}
 
 				function mouseover(d){
-					d3.select(this)
+					var circle = d3.select(this)
 						.attr('stroke', hoverColor)
 						.attr('stroke-width', 5);
 
-					d3.select('.tooltip')
+					d3.select('.city-tooltip')
 						.transition()
 						.style('opacity', 1);
 
-					d3.select('.tooltip')
+					var absMouseCoord = d3.mouse(d3.select(this)[0][0]);
+
+					d3.select('.city-tooltip')
 						.html(function(){
 							var tooltip = '<p>' + d.zip + ' - ' + d.name + '</p>';
 							if (document.getElementById('populationCheck').checked) {
@@ -186,15 +188,15 @@
 
 							return tooltip;
 						})
-						.style('left', (d3.event.pageX) + "px")
-						.style('top', (d3.event.pageY) + "px");						
+						.style('left', (absMouseCoord[0]) + "px")
+						.style('top', (absMouseCoord[1]) + "px");					
 				}
 
 				function moseout(){
 					d3.select(this)
 						.attr('stroke', 'none');
 
-					d3.select('.tooltip')
+					d3.select('.city-tooltip')
 						.transition()
 						.style('opacity', 0);
 				}

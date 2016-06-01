@@ -26,10 +26,10 @@
 			width: 117px;
 			padding: 10px 15px;;
 		}
-		.row{
+		.info-row{
 			margin: 10px 0;
 		}
-		.row>span{
+		.info-row>span{
 			font-size: 14px;
 		}
 		.color-box-wrapper{
@@ -59,7 +59,7 @@
 			cursor: -moz-grabbing;
 			cursor: -webkit-grabbing;
 		}
-		.tooltip {
+		.city-tooltip {
 			position: absolute;
 			padding: 5px 10px;
 			font: 11px sans-serif;
@@ -68,7 +68,7 @@
 			color: white;
 			background-color: black;
 		}
-		.tooltip>p{
+		.city-tooltip>p{
 			margin-top: 5px;
 			margin-bottom: 5px; 
 		}
@@ -78,13 +78,13 @@
 	<div class="vis-box">
 		<div class="vis"></div>
 		<div class="options">
-			<div class="row">
+			<div class="info-row">
 				<input id="zipInput" name="zipcode" type="text" value="" pattern="\d{5}" maxlength="5"></input>
 			</div>
-			<div class="row">
+			<div class="info-row">
 				<input id="populationCheck" type="checkbox" name="population" checked="false" /> <span>Show population</span>
 			</div>
-			<div class="row">
+			<div class="info-row">
 				<input id="colorCheck" type="checkbox" name="color" /> <span>Color next number</span>
 				<div class="color-box-wrapper">
 					<div class="color-box">0</div>

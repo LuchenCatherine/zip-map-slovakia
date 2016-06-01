@@ -9,32 +9,32 @@
 
 'use strict';
 
-(function (window, document, undefined) {
+(function ( window, document, undefined ) {
 
-	function data2Vis(file){		
+	function data2Vis( file ){		
 
-		d3.tsv(file, function (error, data) {
+		d3.tsv( file, function ( error, data ) {
 
-			if (error) throw error;
+			if ( error ) return error;
 
-			visualize(parseData(data));
+			visualize( parseData( data ) );
 
-			function parseData(data){
-				var citiesArray = data.map(function (cityInfo) {
+			function parseData( data ){
+				var citiesArray = data.map( function (cityInfo) {
 					var zip = cityInfo.zip.replace(/\s/g, '');
-					var population = parseInt(cityInfo.population.replace(/\s/g, ''));
+					var population = parseInt( cityInfo.population.replace(/\s/g, '') );
 					// gps coordinates
-					var coordinates = /(.+)°N (.+)°E/g.exec(cityInfo.gps);
-					var lat = parseFloat(coordinates[1].replace(/ /g, ''));
-					var lon = parseFloat(coordinates[2].replace(/ /g, ''));					
+					var coordinates = /(.+)°N (.+)°E/g.exec( cityInfo.gps );
+					var lat = parseFloat( coordinates[1].replace(/ /g, '') );
+					var lon = parseFloat( coordinates[2].replace(/ /g, '') );					
 
-					return new City(cityInfo.name, zip, population, lat, lon);
+					return city( cityInfo.name, zip, population, lat, lon );
 				});
 
 				return citiesArray;
 			}
 
-			function visualize(data) {
+			function visualize( data ) {
 				// variables
 				var width = 800;
 				var height = 500;
@@ -45,24 +45,24 @@
 				var matchColor = '#000000';
 				var nonMatchColor = '#dadada';
 
-				var medianLat = d3.median(data, function(d){ return d.lat; });
-				var medianLon = d3.median(data, function(d){ return d.lon; });
+				var medianLat = d3.median( data, function(d){ return d.lat; } );
+				var medianLon = d3.median( data, function(d){ return d.lon; } );
 
 				// scales and functions
 				var radius = d3.scale.sqrt()
-					.domain(d3.extent(data, function(d){ return d.population; }))
-					.range([2, 20]);
+					.domain( d3.extent( data, function(d){ return d.population; } ) )
+					.range( [2, 20] );
 
 				var cityColor = d3.scale.ordinal()
-					.domain(d3.range(10))
-					.range(['#2ca02c', '#bcbd22', '#ff7f0e', '#d62728', '#8c564b', '#7f7f7f', '#17becf', '#1f77b4', '#9467bd', '#e377c2']);
+					.domain( d3.range( 10 ) )
+					.range( ['#2ca02c', '#bcbd22', '#ff7f0e', '#d62728', '#8c564b', '#7f7f7f', '#17becf', '#1f77b4', '#9467bd', '#e377c2'] );
 
 				var projection = d3.geo.mercator();
 
 				var zoom = d3.behavior.zoom()
-					.translate([width/2, height/2])
-					.scale(scaleInitial)
-					.scaleExtent([scaleInitial, 15*scaleInitial])
+					.translate( [width/2, height/2] )
+					.scale( scaleInitial )
+					.scaleExtent( [scaleInitial, 15*scaleInitial] )
 					.on('zoom', zoomed);
 
 				// add basic tooltip
@@ -86,8 +86,8 @@
 
 				var circleGroup = svg.append('g');
 
-				svg.call(zoom)
-					.call(zoom.event);
+				svg.call( zoom )
+					.call( zoom.event );
 
 				// draw cities
 				update();
@@ -103,12 +103,12 @@
 					// color legend only when checked
 					d3.selectAll('.color-box')
 						.style('background-color', function(d, i){ 
-							return document.getElementById('colorCheck').checked ? cityColor(i) : nonMatchColor; 
+							return document.getElementById('colorCheck').checked ? cityColor( i ) : nonMatchColor;
 						});
 				});
 
 				d3.select('#zipInput').on('input', function(){
-					if (isNaN(document.getElementById('zipInput').value)) {
+					if ( isNaN( document.getElementById('zipInput').value ) ) {
 						// show warning
 					} else {
 						// valid input
@@ -123,25 +123,25 @@
 					var input = document.getElementById('zipInput').value;
 
 					var cities = circleGroup.selectAll('circle')
-						.data(data);
+						.data( data );
 					
 					cities.enter()
 						.append('circle')
 							.attr('class', 'city')
-							.attr('cx', function(d){ return projection([d.lon, d.lat])[0]; })
-							.attr('cy', function(d){ return projection([d.lon, d.lat])[1]; })
+							.attr('cx', function(d){ return projection( [d.lon, d.lat] )[0]; })
+							.attr('cy', function(d){ return projection( [d.lon, d.lat] )[1]; })
 							.on('mouseover', mouseover)
 							.on('mouseout', moseout)
-							.text(function(d){ return d.name; });
+							.text( function(d){ return d.name; } );
 
 					cities.transition()
-							.duration(800)
-							.attr('r', function(d){	return populationCheck ? radius(d.population) : 3; })
-							.attr('fill', function(d){ return color(input, d.zip, colorCheck); });
+							.duration( 800 )
+							.attr('r', function(d){	return populationCheck ? radius( d.population ) : 3; })
+							.attr('fill', function(d){ return color( input, d.zip, colorCheck ); });
 
 					cities.exit()
 						.transition()
-						.duration(700)
+						.duration( 700 )
 						.attr('r', 0)
 						.remove();
 				}
@@ -154,8 +154,8 @@
 					}
 
 					function nextNumberColor(){
-						if (input.length<5) {
-							return cityColor(zip.charAt(input.length));
+						if ( input.length < 5 ) {
+							return cityColor( zip.charAt( input.length ) );
 						} else {
 							// no next number, the whole input is the same as zip
 							return matchColor;
@@ -164,7 +164,7 @@
 				}
 
 				function mouseover(d){
-					var circle = d3.select(this)
+					var circle = d3.select( this )
 						.attr('stroke', hoverColor)
 						.attr('stroke-width', 5);
 
@@ -172,28 +172,31 @@
 						.transition()
 						.style('opacity', 1);
 
-					var absMouseCoord = d3.mouse(d3.select(this)[0][0]);
+					var absMouseCoord = d3.mouse( d3.select( this )[0][0] );
 
 					d3.select('.city-tooltip')
-						.html(function(){
-							var tooltip = '<p>' + d.zip + ' - ' + d.name + '</p>';
-							if (document.getElementById('populationCheck').checked) {
-								// create user friendly format for population numbers
-								var number = d.population.toString().split('').reverse().join('');
-								number = number.replace(/(\d{3})/g, "$1 ");
-								number = number.split('').reverse().join('');
+						.html( showTooltip )
+						.style('left', absMouseCoord[0] + "px")
+						.style('top', absMouseCoord[1] + "px");
 
-								tooltip += '<p>' + number + ' citizens </p>';
-							}
+					function showTooltip(){
+						var tooltip = '<p>' + d.zip + ' - ' + d.name + '</p>';
+						
+						if ( document.getElementById('populationCheck').checked ) {
+							// create user friendly format for population numbers
+							var number = d.population.toString().split('').reverse().join('');
+							number = number.replace(/(\d{3})/g, "$1 ");
+							number = number.split('').reverse().join('');
 
-							return tooltip;
-						})
-						.style('left', (absMouseCoord[0]) + "px")
-						.style('top', (absMouseCoord[1]) + "px");					
+							tooltip += '<p>' + number + ' citizens </p>';
+						}
+
+						return tooltip;
+					}				
 				}
 
 				function moseout(){
-					d3.select(this)
+					d3.select( this )
 						.attr('stroke', 'none');
 
 					d3.select('.city-tooltip')
@@ -203,26 +206,30 @@
 
 				function zoomed(){
 					projection
-						.translate(zoom.translate())
-						.scale(zoom.scale())
-						.center([medianLon, medianLat]);
+						.translate( zoom.translate() )
+						.scale( zoom.scale() )
+						.center( [medianLon, medianLat] );
 
 					circleGroup.selectAll('circle')
-						.attr('cx', function(d){ return projection([d.lon, d.lat])[0]; })
-						.attr('cy', function(d){ return projection([d.lon, d.lat])[1]; });
+						.attr('cx', function(d){ return projection( [d.lon, d.lat] )[0]; })
+						.attr('cy', function(d){ return projection( [d.lon, d.lat] )[1]; });
 				}
 			}
 		});
 
-		function City(name, zip, population, lat, lon){
-			this.name = name;
-			this.zip = zip;
-			this.population = population;
-			this.lat = lat;
-			this.lon = lon;
+		function city( name, zip, population, lat, lon ){
+			var city = {
+				name: name,
+				zip: zip,
+				population: population,
+				lat: lat,
+				lon: lon
+			};
+
+			return city;
 		}
 	}
 
 	data2Vis('/data/slovakia_cities.tsv');
 
-})(this, document);
+})( this, document );

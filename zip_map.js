@@ -76,7 +76,7 @@
 
 				var scaleInitial = 6000;
 
-				var hoverColor = '#aaaaaa';
+				var hoverColor = '#00bcd4';
 				var matchColor = '#000000';
 				var nonMatchColor = '#dadada';
 
@@ -116,6 +116,27 @@
 				var svg = vis.append('g');
 
 				vis.call( zoom );
+
+				// initialize tooltip
+				var tip = d3.tip()
+					.attr('class', 'd3-tip')
+					.offset( [-10, 0] )
+					.html(function(d) {
+						// create user friendly format for population numbers
+						var number = d.population.toString().split('').reverse().join('');
+						number = number.replace(/(\d{3})/g, '$1 ');
+						number = number.split('').reverse().join('');
+
+						// create elements for each row showing info 
+						var name = '<div class="cityname">'+ d.name +'</div>';
+						var zip = '<div>'+ d.zip +'</div>';
+						var citizens = '<div>'+ number +' citizens</div>';
+
+						return name + zip + citizens;
+					});
+
+				// invoke the tip in the vis context
+				vis.call( tip );
 
 				// draw cities
 				update();
@@ -216,40 +237,13 @@
 				 * @param {object} city
 				 */
 				function mouseover( city ){
+					var colorCheck = document.getElementById('colorCheck').checked;
+
 					var circle = d3.select( this )
-						.attr('stroke', hoverColor)
+						.attr('stroke', colorCheck ? matchColor : hoverColor)
 						.attr('stroke-width', 5);
 
-					d3.select('.city-tooltip')
-						.transition()
-						.style('opacity', 1);
-
-					var absMouseCoord = d3.mouse( this );
-
-					d3.select('.city-tooltip')
-						.html( showTooltip )
-						.style('left', absMouseCoord[0] + 'px')
-						.style('top', absMouseCoord[1] + 'px');
-
-					/**
-					 * Shows formatted tooltip with information about the city.
-					 *
-					 * @return {string}
-					 */
-					function showTooltip() {
-						var tooltip = '<p>' + city.zip + ' - ' + city.name + '</p>';
-
-						if ( document.getElementById('populationCheck').checked ) {
-							// create user friendly format for population numbers
-							var number = city.population.toString().split('').reverse().join('');
-							number = number.replace(/(\d{3})/g, '$1 ');
-							number = number.split('').reverse().join('');
-
-							tooltip += '<p>' + number + ' citizens </p>';
-						}
-
-						return tooltip;
-					}
+					tip.show( city );
 				}
 
 				/**
@@ -259,9 +253,7 @@
 					d3.select( this )
 						.attr('stroke', 'none');
 
-					d3.select('.city-tooltip')
-						.transition()
-						.style('opacity', 0);
+					tip.hide();
 				}
 
 				/**

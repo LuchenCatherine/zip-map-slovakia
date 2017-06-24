@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<title>ZIP code map of Slovakia</title>
 
-	<script src="//d3js.org/d3.v3.min.js" type="text/javascript"></script>
+	<script src="//d3js.org/d3.v4.min.js" type="text/javascript"></script>
 	<script type="text/javascript" src="/zip_map.js"></script>
 	<style type="text/css">
 		.vis-box{
@@ -46,31 +46,18 @@
 			padding: 1px;
 			font-size: 11px;
 		}
-		.overlay {
-			fill: none;
-			pointer-events: all;
-			cursor: move;
-			cursor: grab;
-			cursor: -moz-grab;
-			cursor: -webkit-grab;
-		}
-		.overlay:active { 
-			cursor: grabbing;
-			cursor: -moz-grabbing;
-			cursor: -webkit-grabbing;
-		}
 		.city-tooltip {
 			position: absolute;
 			padding: 5px 10px;
 			font: 11px sans-serif;
-			font-weight: bold;			
+			font-weight: bold;
 			text-align: center;
 			color: white;
 			background-color: black;
 		}
 		.city-tooltip>p{
 			margin-top: 5px;
-			margin-bottom: 5px; 
+			margin-bottom: 5px;
 		}
 	</style>
 </head>

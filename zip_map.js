@@ -77,7 +77,10 @@
     var width = window.innerWidth - (margin * 2);
     var height = window.innerHeight - (margin * 2);
 
+    // initial scale for projection
     var scaleInitial = 6000;
+    // scale value for mouse event
+    var zoomScale = 1;
 
     var hoverColor = '#00bcd4';
     var matchColor = '#ffffff';
@@ -89,7 +92,7 @@
     // scales and functions
     var radius = d3.scaleSqrt()
       .domain( d3.extent( data, function(d) { return d.population; } ) )
-      .range( [2, 20] );
+      .range( [1, 20] );
 
     var cityColor = d3.scaleOrdinal()
       .domain( d3.range( 10 ) )
@@ -139,6 +142,17 @@
     // draw cities
     update();
 
+    // add listener on window size change
+    window.onresize = function(event) {
+      // update the variables
+      width = window.innerWidth - (margin * 2);
+      height = window.innerHeight - (margin * 2);
+
+      // update the svg size
+      svg.attr('width', width)
+        .attr('height', height);
+    }
+
     // add listeners to input fields
     d3.select('#populationCheck').on('change', function() {
       update();
@@ -181,7 +195,7 @@
         .remove();
 
       cities.transition()
-        .attr('r', function(d) { return populationCheck ? radius( d.population ) : 3; })
+        .attr('r', circleSize)
         .attr('fill', function(d) {
           if (input.length === 5 && d.zip.startsWith( input )) {
             tip.show(d, d3.select(this).node());
@@ -204,8 +218,13 @@
         .on('mouseover', mouseover)
         .on('mouseout', moseout)
         .transition()
-        .attr('r', function(d) { return populationCheck ? radius( d.population ) : 3; })
+        // .delay(function (d, i) { return Math.max(i, 50) + i; })
+        .attr('r', circleSize)
         .attr('fill', function(d) { return color( input, d.zip, colorCheck ); });
+
+        function circleSize(d) {
+          return populationCheck ? radius( d.population ) : 2;
+        }
     }
 
     /**
@@ -250,7 +269,7 @@
 
       var circle = d3.select( this )
         .attr('stroke', colorCheck ? matchColor : hoverColor)
-        .attr('stroke-width', 5);
+        .attr('stroke-width', 5 / zoomScale);
 
       tip.show( city, d3.select(this).node() );
     }
@@ -269,7 +288,10 @@
      * Updates the projection acoording to updated zoom scale
      * and renderes only those cities in the extent of the zoom scale.
      */
-    function zoomed() {
+    function zoomed(event) {
+      // update the zoom scale value
+      zoomScale = d3.event.transform.k;
+
       // translate the whole group holding all circles
       vis.attr('transform', d3.event.transform);
 

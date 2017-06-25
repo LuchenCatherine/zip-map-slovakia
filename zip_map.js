@@ -73,14 +73,15 @@
    */
   function visualize( data ) {
     // variables
-    var width = 800;
-    var height = 500;
+    var margin = 12;
+    var width = window.innerWidth - (margin * 2);
+    var height = window.innerHeight - (margin * 2);
 
     var scaleInitial = 6000;
 
     var hoverColor = '#00bcd4';
-    var matchColor = '#000000';
-    var nonMatchColor = '#dadada';
+    var matchColor = '#ffffff';
+    var nonMatchColor = '#3a3a3a';
 
     var medianLat = d3.median( data, function(d) { return d.lat; } );
     var medianLon = d3.median( data, function(d) { return d.lon; } );
@@ -92,7 +93,7 @@
 
     var cityColor = d3.scaleOrdinal()
       .domain( d3.range( 10 ) )
-      .range( ['#2ca02c', '#bcbd22', '#ff7f0e', '#d62728', '#8c564b', '#7f7f7f', '#17becf', '#1f77b4', '#9467bd', '#e377c2'] );
+      .range( ['#2ca02c', '#bcbd22', '#ff7f0e', '#d62728', '#8c564b', '#b1b1b1', '#17becf', '#1f77b4', '#9467bd', '#e377c2'] );
 
     var projection = d3.geoMercator()
       .translate( [width/2 - scaleInitial/3 - 50, height/2 + scaleInitial - 150] )
@@ -102,15 +103,16 @@
       .scaleExtent( [1, 15] )
       .on('zoom', zoomed);
 
-    // draw elements
+    // draw SVG
     var svg = d3.select('.vis')
       .append('svg')
       .attr('width', width)
-      .attr('height', height)
-      .style('border', '1px solid black')
+      .attr('height', height);
 
+    // create main group holding all elements
     var vis = svg.append('g');
 
+    // invoke zoom behaviour
     svg.call( zoom );
 
     // initialize tooltip
@@ -153,10 +155,8 @@
     });
 
     d3.select('#zipInput').on('input', function() {
-      if ( isNaN( document.getElementById('zipInput').value ) ) {
-        // show error warning
-        console.log('Error - invalid input for ZIP - please enter a number between 0 and 99999');
-      } else {
+      // ignore invalid input for ZIP - valid only numbers between 0 and 99999
+      if ( !isNaN( document.getElementById('zipInput').value ) ) {
         // valid input
         update();
       }
@@ -182,7 +182,19 @@
 
       cities.transition()
         .attr('r', function(d) { return populationCheck ? radius( d.population ) : 3; })
-        .attr('fill', function(d) { return color( input, d.zip, colorCheck ); });
+        .attr('fill', function(d) {
+          if (input.length === 5 && d.zip.startsWith( input )) {
+            tip.show(d, d3.select(this).node());
+
+            d3.select('.d3-tip')
+              .transition()
+              .delay( 2000 )
+              .duration( 1000 )
+              .style('opacity', 0);
+          }
+
+          return color( input, d.zip, colorCheck );
+        });
 
       cities.enter()
         .append('circle')
@@ -240,7 +252,7 @@
         .attr('stroke', colorCheck ? matchColor : hoverColor)
         .attr('stroke-width', 5);
 
-      tip.show( city );
+      tip.show( city, d3.select(this).node() );
     }
 
     /**

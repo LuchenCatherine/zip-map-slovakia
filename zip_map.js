@@ -22,10 +22,7 @@
 
     d3.tsv( file, function ( error, data ) {
 
-      if ( error ) {
-        console.log(error);
-        return error;
-      }
+      if ( error ) { return error; }
 
       visualize( parseData( data ) );
     });
@@ -72,7 +69,7 @@
    * @param {array} data array of objects representing cities
    */
   function visualize( data ) {
-    // variables
+    // vis variables
     var margin = 12;
     var width = window.innerWidth - (margin * 2);
     var height = window.innerHeight - (margin * 2);
@@ -85,28 +82,30 @@
     var hoverColor = '#00bcd4';
     var matchColor = '#ffffff';
     var nonMatchColor = '#3a3a3a';
+    var numberColors = [
+      '#2ca02c', '#bcbd22', '#ff7f0e', '#d62728', '#8c564b', '#b1b1b1', '#17becf', '#1f77b4', '#9467bd', '#e377c2'
+    ];
 
-    var medianLat = d3.median( data, function(d) { return d.lat; } );
-    var medianLon = d3.median( data, function(d) { return d.lon; } );
-
-    // scales and functions
+    // scales for circle size and color
     var radius = d3.scaleSqrt()
       .domain( d3.extent( data, function(d) { return d.population; } ) )
       .range( [1, 20] );
 
     var cityColor = d3.scaleOrdinal()
       .domain( d3.range( 10 ) )
-      .range( ['#2ca02c', '#bcbd22', '#ff7f0e', '#d62728', '#8c564b', '#b1b1b1', '#17becf', '#1f77b4', '#9467bd', '#e377c2'] );
+      .range( numberColors );
 
+    // projection - mercator - translated to center the map
     var projection = d3.geoMercator()
       .translate( [width/2 - scaleInitial/3 - 50, height/2 + scaleInitial - 150] )
       .scale( scaleInitial );
 
+    // zoom for handling the mouse events
     var zoom = d3.zoom()
       .scaleExtent( [1, 15] )
       .on('zoom', zoomed);
 
-    // draw SVG
+    // draw SVG panel
     var svg = d3.select('.vis')
       .append('svg')
       .attr('width', width)
@@ -216,7 +215,7 @@
         .attr('cx', function(d) { return projection( [d.lon, d.lat] )[0]; })
         .attr('cy', function(d) { return projection( [d.lon, d.lat] )[1]; })
         .on('mouseover', mouseover)
-        .on('mouseout', moseout)
+        .on('mouseout', mouseout)
         .transition()
         // .delay(function (d, i) { return Math.max(i, 50) + i; })
         .attr('r', circleSize)
@@ -277,7 +276,7 @@
     /**
      * Hides the tooltip and resets the stroke of a circle.
      */
-    function moseout() {
+    function mouseout() {
       d3.select( this )
         .attr('stroke', 'none');
 
@@ -295,9 +294,10 @@
       // translate the whole group holding all circles
       vis.attr('transform', d3.event.transform);
 
-      // do not translate each circle individually
+      // when having more than hundreds/thousands of elements:
+      // do not translate each element individually
       // vis.selectAll('circle')
-      // 	.attr('transform', d3.event.transform);
+      //   .attr('transform', d3.event.transform);
     }
   }
 
